@@ -1,21 +1,5 @@
-//import fetchCountries from './fetchCountries';
-
-import Notiflix from 'notiflix';
-
-let debounce = require('lodash.debounce');
-
-import './css/styles.css';
-
-const DEBOUNCE_DELAY = 300;
-
-const inputBox = document.getElementById("search-box");
-
-const countryList = document.querySelector(".country-list");
-const countryInfo = document.querySelector(".country-info");
-
-
 function fetchCountries(name) {
-    return fetch("https://restcountries.com/v3.1/name/" + name + "?fields=name,population,languages,capital,flags&_sort=name"
+    return fetch("https://restcountries.com/v3.1/name/" + name + "?fields=name,population,languages,capital,flags"
         ).then((response) => {
             if (!response.ok) {
                 Notiflix.Notify.failure('Oops, there is no country with that name')
@@ -39,7 +23,7 @@ function renderCountryList(countries) {
         return `
             <li>
                 <img src = "${country.flags.svg}" alt="flag" width="30px" height="20"/>
-                <span >${country.name.common}</span>
+                <span>${country.name.common}</span>
             </li>
              `;
         })
@@ -62,48 +46,4 @@ function renderCountryList(countries) {
     }
 }
 
-
-
-
-
-
-
-
-
-inputBox.addEventListener("input", debounce(() => {
-    const name = inputBox.value.trim();
-    console.log("w kliku");
-    console.log("-"+inputBox.value+"-");
-    console.log("-"+name+"-");
-    if (name.length < 1){
-        Notiflix.Notify.info('Enter the country name.');
-        return;
-    }
-
-    
-    fetchCountries(name)
-        .then((countries) => {
-            renderCountryList(countries);
-        })
-        .catch((error) => console.log(error));
-    },DEBOUNCE_DELAY)
-);
-
-
-
-
-//INTERFEJS
-inputBox.style.fontSize = '20px';
-inputBox.style.marginLeft = '40px';
-
-//countryList.style.marginLeft = '20px';
-countryList.style.listStyle = 'none';
-countryList.style.display = 'flex';
-countryList.style.flexDirection = 'column';
-countryList.style.fontSize = '20px';
-
-
-
-
-countryInfo.style.marginLeft = '20px';
-//countryInfo.span.style.fontSize = '80px';
+export default fetchCountries;
