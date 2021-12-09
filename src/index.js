@@ -1,76 +1,106 @@
+import Notiflix from 'notiflix';
+
+let debounce = require('lodash.debounce');
+
+
 import './css/styles.css';
 
 const DEBOUNCE_DELAY = 300;
 
 const create = document.querySelector('[data-create]');
-
-const inputBox = document.querySelector("#search-box");
+const inputBox = document.getElementById("search-box");
 
 console.log(inputBox);
 
 
-const userList = document.querySelector(".country-list");
-
-
+const countryList = document.querySelector(".country-list");
+const countryInfo = document.querySelector(".country-info");
 
 function fetchCountries(name) {
-        
-    fetch("https://restcountries.com/v3.1/name/" + name)
-            .then(res => res.json())
-            .then(res => {
-                console.log(res);
-            })
+    return fetch("https://restcountries.com/v3.1/name/" + name + "?fields=name,population,languages,capital,flags"
+        ).then((response) => {
+            if (!response.ok) {
+                Notiflix.Notify.failure('Oops, there is no country with that name')
+                return;
+                }
+            return response.json();
+        });
+    }
+
+function renderCountryList(countries) {
+    const howMany = countries.length;
+    console.log(howMany);
+    if (howMany > 10)
+    {
+        Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
+        countryInfo.innerHTML = "";
+        countryList.innerHTML = "";
+        //return ``;
+
+    }
+    else if (2<=howMany & howMany<=10){
+        const countriesList = countries.map((country) => {
+        return `
+            <li>
+                <img src = "${country.flags.svg}" alt="flag" width="30px" height="20"/>
+                <span>${country.name.common}</span>
+            </li>
+             `;
+        })
+        .join("");
+        countryList.innerHTML = countriesList;
+        countryInfo.innerHTML = "";
+
+    }
+    else {
+        const landInfo = countries.map((country) => {
+        return `
+            <img src = "${country.flags.svg}" alt="flag" width="30px" height="20"/>
+            <span>${country.name.common}</span>
+            <p><b>Capital</b>: ${country.capital}</p>
+            <p><b>Population</b>: ${country.population}</p>
+            <p><b>Languages</b>: ${country.languages.lenght}</p>
+        `;
+    })
+    countryInfo.innerHTML = landInfo;
+    countryList.innerHTML = "";
+    }
 }
 
-fetchCountries("Spain");
 
-
-        function fetchUsers() {
-            return fetch(
-                "https://restcountries.com/v3.1/name/rus?fields=name,population,languages,capital,flags"
-            ).then((response) => {
-                if (!response.ok) {
-                    throw new Error(response.status);
-                }
-                return response.json();
-            });
-        }
-
-        function renderUserList(users) {
-            const markup = users
-                .map((user) => {
-
-                    return `<li>
-          <p><b>Capital</b>: ${user.name.official}</p>
-          <p><b>Population</b>: ${user.population}</p>
-          <p><b>Languages</b>: ${user.languages["pol"]}</p>
-
-          <p><b>Capital</b>: ${user.capital}</p>
-          <p><b>Flaga</b>: ${user.flags.svg}</p>
-
-        </li>`;
-                })
-                .join("");
-            userList.innerHTML = markup;
-        }
-
-
-
-create.addEventListener("click", () => {
+create.addEventListener("input", () => {
     console.log("w kliku");
-    fetchCountries("Spain");
-    fetchUsers()
-        .then((users) => {
-            renderUserList(users);
-            console.log(users);
-        }
-            )
-                .catch((error) => console.log(error));
-    
+    console.log(inputBox.value);
+    const land = inputBox.value;
+    fetchCountries(land)
+        .then((countries) => {
+            renderCountryList(countries);
+            //console.log(countries);
+        })
+        .catch((error) => console.log(error));
 });
 
-// https://restcountries.com/v2/all?fields=name,capital,currencies
+inputBox.addEventListener("input", debounce(() => {
+    const name = inputBox.value;
+    if (name.length < 1){
+        Notiflix.Notify.info('Enter the country name.');
+        return;
+    }
+   
+    fetchCountries(name)
+        .then((countries) => {
+            renderCountryList(countries);
+            //console.log(countries);
+        })
+        .catch((error) => console.log(error));
+    },DEBOUNCE_DELAY)
+);
 
-// Sources
-        //   <p><b>Email</b>: ${user.email}</p>
-        //   <p><b>Company</b>: ${user.company.name}</p>
+
+
+
+//INTERFEJS
+countryList.style.marginTop = '100px';
+countryList.style.listStyle = 'none';
+countryList.style.display = 'flex';
+countryList.style.flexDirection = 'column';
