@@ -79,6 +79,8 @@ function eventHandler(event) {
     console.log("-"+name+"-");
     if (name.length < 1){
         Notiflix.Notify.info('Enter the country name.');
+        countryInfo.innerHTML = "";
+        countryList.innerHTML = "";
         return;
     }
     
